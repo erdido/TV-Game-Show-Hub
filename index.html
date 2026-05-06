@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TV Game Show Hub: College Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:#080c12; --bg-panel:rgba(255,255,255,0.04); --bg-glass:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.10); --accent-blue:#63b3ed; --accent-cyan:#4fd1c5;
+  --accent-gold:#f6c90e; --accent-red:#fc5c65; --accent-green:#26de81; --accent-orange:#ff7043;
+  --text-primary:#e8eaf0; --text-muted:#8892a4;
+  --font-display:'Bebas Neue',sans-serif; --font-body:'DM Sans',sans-serif; --font-mono:'JetBrains Mono',monospace;
+  --radius:12px; --shadow:0 8px 32px rgba(0,0,0,0.6); --transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg-deep);color:var(--text-primary);font-family:var(--font-body);font-size:16px;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;opacity:0.4;}
+body::after{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 60% 40% at 15% 20%,rgba(99,179,237,0.06) 0%,transparent 70%),radial-gradient(ellipse 50% 50% at 85% 80%,rgba(246,201,14,0.04) 0%,transparent 70%);pointer-events:none;}
+#app{position:relative;z-index:1;min-height:100vh;}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:0.03em;}
+.screen{display:none;padding:24px;max-width:960px;margin:0 auto;}
+.screen.active{display:block;}
+
+/* Shared */
+.glass-card{background:var(--bg-glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-body);font-size:15px;font-weight:600;transition:var(--transition);position:relative;overflow:hidden;}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.08);opacity:0;transition:opacity 0.2s;}
+.btn:hover::after{opacity:1;} .btn:active{transform:scale(0.97);} .btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-primary{background:var(--accent-blue);color:#000;} .btn-gold{background:var(--accent-gold);color:#000;}
+.btn-red{background:var(--accent-red);color:#fff;} .btn-green{background:var(--accent-green);color:#000;}
+.btn-orange{background:var(--accent-orange);color:#fff;} .btn-ghost{background:transparent;color:var(--text-primary);border:1px solid var(--border);}
+.btn-sm{padding:8px 16px;font-size:13px;} .btn-lg{padding:16px 36px;font-size:18px;} .btn-block{width:100%;justify-content:center;}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;font-family:var(--font-mono);letter-spacing:0.08em;text-transform:uppercase;}
+.badge-gold{background:rgba(246,201,14,0.15);color:var(--accent-gold);border:1px solid rgba(246,201,14,0.3);}
+.badge-blue{background:rgba(99,179,237,0.15);color:var(--accent-blue);border:1px solid rgba(99,179,237,0.3);}
+.input-field{width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:var(--font-body);font-size:15px;transition:var(--transition);outline:none;}
+.input-field:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(99,179,237,0.15);}
+.label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:block;}
+.back-btn{position:fixed;top:20px;left:20px;z-index:100;}
+.field-group{margin-bottom:16px;}
+
+/* LEDs */
+.led-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:14px 0;}
+.led{width:17px;height:17px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);transition:var(--transition);flex-shrink:0;}
+.led.blue{background:var(--accent-blue);box-shadow:0 0 8px var(--accent-blue);}
+.led.gold{background:var(--accent-gold);box-shadow:0 0 8px var(--accent-gold);}
+
+/* Timer bar */
+.timer-bar-wrap{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;margin-bottom:16px;overflow:hidden;}
+.timer-bar-fill{height:100%;border-radius:3px;background:var(--accent-blue);transition:width 1s linear,background 0.5s;}
+.timer-bar-fill.warn{background:var(--accent-gold);} .timer-bar-fill.danger{background:var(--accent-red);}
+
+/* Timer ring */
+.timer-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.timer-ring svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.08);}
+.ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.ring-text{position:absolute;font-family:var(--font-mono);font-size:32px;font-weight:700;}
+
+/* Toast */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--bg-glass);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:99px;padding:12px 28px;font-weight:600;font-size:15px;z-index:999;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#0f1520;border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:460px;width:90%;}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* Animations */
+@keyframes glitch1{0%,100%{transform:translate(0)}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-2px,-4px)}}
+@keyframes glitch2{0%,100%{opacity:1}20%{opacity:0.3}40%{opacity:0.8}60%{opacity:0.1}80%{opacity:0.9}}
+.glitch{animation:glitch1 0.3s steps(1) 3,glitch2 0.3s steps(1) 3;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.pulsing{animation:pulse 1s ease-in-out infinite;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.6)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{0%,100%{text-shadow:0 0 20px #63b3ed,0 0 40px #63b3ed}50%{text-shadow:0 0 60px #63b3ed,0 0 100px #63b3ed}}
+
+/* End overlay */
+.end-overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.92);backdrop-filter:blur(10px);flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px;}
+.end-overlay.active{display:flex;}
+.end-emoji{font-size:96px;animation:scaleIn 0.6s cubic-bezier(0.4,0,0.2,1);}
+.end-title{font-family:var(--font-display);font-size:clamp(52px,10vw,100px);animation:fadeInUp 0.7s ease both;animation-delay:0.15s;}
+.end-sub{font-size:18px;color:var(--text-muted);animation:fadeInUp 0.7s ease both;animation-delay:0.3s;}
+.end-prize{font-family:var(--font-mono);font-size:38px;font-weight:700;color:var(--accent-gold);animation:fadeInUp 0.7s ease both;animation-delay:0.45s;}
+
+/* Frozen overlay */
+.frozen-overlay{display:none;position:fixed;inset:0;z-index:150;background:rgba(0,15,50,0.95);backdrop-filter:blur(12px);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;}
+.frozen-overlay.active{display:flex;}
+.frozen-text{font-size:clamp(60px,12vw,110px);font-family:var(--font-display);color:var(--accent-blue);letter-spacing:0.05em;animation:shimmer 1.5s ease-in-out infinite;}
+
+/* Last Chance banner */
+.lc-banner{display:none;background:rgba(252,92,101,0.08);border:2px solid var(--accent-red);border-radius:10px;padding:14px 24px;text-align:center;margin-bottom:14px;}
+.lc-banner.active{display:block;}
+.lc-banner p{font-family:var(--font-display);font-size:30px;color:var(--accent-red);letter-spacing:0.05em;}
+
+/* ── Hub ── */
+#hub-screen{padding-top:60px;}
+.hub-header{text-align:center;margin-bottom:52px;}
+.hub-header .eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;color:var(--accent-gold);text-transform:uppercase;margin-bottom:12px;}
+.hub-header h1{font-size:clamp(52px,8vw,90px);line-height:0.95;}
+.hub-header h1 span{color:var(--accent-blue);}
+.hub-header p{margin-top:16px;color:var(--text-muted);font-size:16px;}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+.game-card{background:var(--bg-panel);border:1px solid var(--border);border-radius:16px;padding:28px;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;}
+.game-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.4s;}
+.game-card:hover{transform:translateY(-4px);border-color:var(--glow-color,var(--accent-blue));}
+.game-card:hover::before{opacity:1;}
+.game-card.g1{--glow-color:var(--accent-blue);} .game-card.g1::before{background:radial-gradient(ellipse at top left,rgba(99,179,237,0.08),transparent 60%);}
+.game-card.g2{--glow-color:var(--accent-gold);} .game-card.g2::before{background:radial-gradient(ellipse at top left,rgba(246,201,14,0.08),transparent 60%);}
+.game-card.g3{--glow-color:var(--accent-orange);} .game-card.g3::before{background:radial-gradient(ellipse at top left,rgba(255,112,67,0.08),transparent 60%);}
+.game-card .icon{font-size:36px;margin-bottom:16px;}
+.game-card h2{font-size:32px;margin-bottom:4px;}
+.game-card .subtitle{font-size:12px;color:var(--text-muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;}
+.game-card p{font-size:14px;color:var(--text-muted);line-height:1.6;}
+.game-card .play-arrow{margin-top:20px;font-size:13px;font-weight:700;color:var(--glow-color,var(--accent-blue));letter-spacing:0.05em;}
+
+/* ── Lobby ── */
+#lobby-screen{padding-top:80px;}
+.lobby-header{margin-bottom:32px;}
+.lobby-header .game-tag{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;}
+.lobby-header h2{font-size:48px;}
+.lobby-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:600px){.lobby-grid{grid-template-columns:1fr;}}
+
+/* ── Game 1 ── */
+#game1-screen{padding-top:72px;}
+.g1-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.g1-prize{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--accent-gold);}
+.question-card{background:var(--bg-glass);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px;text-align:center;}
+.question-card .qnum{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:12px;letter-spacing:0.1em;}
+.question-card .qtext{font-size:clamp(17px,2.5vw,22px);line-height:1.55;font-weight:500;}
+.answers-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px;max-width:560px;margin-left:auto;margin-right:auto;}
+.answer-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:20px;color:var(--text-primary);cursor:pointer;font-family:var(--font-body);font-size:16px;font-weight:500;text-align:left;transition:var(--transition);}
+.answer-btn:hover:not(:disabled){background:rgba(99,179,237,0.08);border-color:var(--accent-blue);}
+.answer-btn:disabled{cursor:not-allowed;}
+.answer-btn.correct-reveal{background:rgba(38,222,129,0.12);border-color:var(--accent-green);color:var(--accent-green);}
+.answer-btn.wrong-reveal{background:rgba(252,92,101,0.12);border-color:var(--accent-red);color:var(--accent-red);}
+.answer-btn .letter{font-family:var(--font-mono);font-weight:700;color:var(--text-muted);margin-right:10px;}
+
+/* ── Game 2 ── */
+#game2-screen{padding-top:72px;}
+.duel-arena{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:start;margin-bottom:24px;}
+@media(max-width:680px){.duel-arena{grid-template-columns:1fr;}}
+.player-panel{background:var(--bg-glass);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;}
+.player-panel.active-player{border-color:var(--accent-gold);box-shadow:0 0 20px rgba(246,201,14,0.15);}
+.player-panel .p-name{font-family:var(--font-display);font-size:28px;margin-bottom:12px;}
+.player-panel .p-score{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--accent-gold);}
+.player-panel .p-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;}
+.word-reveal{background:var(--bg-glass);border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;margin-bottom:20px;}
+.definition-text{font-size:16px;color:var(--text-muted);line-height:1.75;margin-bottom:20px;}
+.letter-boxes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
+.letter-box{width:44px;height:54px;border-radius:6px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:24px;font-weight:700;transition:var(--transition);}
+.letter-box.revealed{background:rgba(246,201,14,0.1);border-color:var(--accent-gold);color:var(--accent-gold);}
+.letter-box.space-box{background:transparent;border-color:transparent;width:16px;}
+
+/* ── Game 3: Reazione a Catena ── */
+#game3-screen{padding-top:72px;}
+.rac-header{background:linear-gradient(135deg,#001a2e,#002a40);border:1px solid rgba(0,180,255,0.3);border-radius:16px;padding:20px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.rac-title{font-family:var(--font-display);font-size:26px;color:#00c8ff;letter-spacing:0.08em;}
+.rac-team{font-size:13px;color:rgba(0,200,255,0.5);font-family:var(--font-mono);}
+.rac-timer{font-family:var(--font-mono);font-size:52px;font-weight:700;color:#00c8ff;line-height:1;text-align:center;}
+.rac-timer.warn{color:var(--accent-gold);} .rac-timer.danger{color:var(--accent-red);animation:pulse 0.5s ease-in-out infinite;}
+.rac-score{font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--accent-gold);text-align:right;}
+.rac-word-card{background:linear-gradient(135deg,#001525,#002035);border:2px solid rgba(0,180,255,0.4);border-radius:20px;padding:40px 32px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden;}
+.rac-word-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center top,rgba(0,200,255,0.06),transparent 60%);}
+.rac-word-label{font-size:12px;color:rgba(0,200,255,0.55);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:12px;}
+.rac-word{font-family:var(--font-display);font-size:clamp(40px,7vw,70px);color:#fff;letter-spacing:0.05em;position:relative;z-index:1;}
+.rac-hint{font-size:14px;color:rgba(255,255,255,0.38);margin-top:10px;font-style:italic;}
+.rac-meta{margin-top:16px;font-family:var(--font-mono);font-size:13px;color:var(--text-muted);}
+.rac-controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+.rac-btn{padding:18px 32px;border:none;border-radius:12px;font-family:var(--font-display);font-size:22px;letter-spacing:0.05em;cursor:pointer;transition:var(--transition);}
+.rac-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.rac-btn:active:not(:disabled){transform:scale(0.96);}
+.rac-btn-correct{background:var(--accent-green);color:#000;}
+.rac-btn-wrong{background:var(--accent-red);color:#fff;}
+.rac-btn-pass{background:rgba(255,255,255,0.07);color:var(--text-muted);border:1px solid var(--border);font-size:18px;padding:14px 24px;}
+.rac-log{max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;}
+.rac-log-item{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-size:14px;}
+.rac-log-item.log-correct{border-color:rgba(38,222,129,0.3);background:rgba(38,222,129,0.05);}
+.rac-log-item.log-wrong{border-color:rgba(252,92,101,0.3);background:rgba(252,92,101,0.05);}
+
+/* ── Results ── */
+#results-screen{padding-top:80px;text-align:center;}
+.score-board{display:flex;flex-direction:column;gap:12px;max-width:480px;margin:0 auto 32px;}
+.score-row{background:var(--bg-glass);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.score-row.winner{border-color:var(--accent-gold);background:rgba(246,201,14,0.06);}
+.score-row .rank{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);width:28px;}
+.score-row .name{font-weight:600;font-size:18px;}
+.score-row .pts{font-family:var(--font-mono);font-weight:700;font-size:20px;color:var(--accent-gold);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- BACK -->
+<button class="btn btn-ghost btn-sm back-btn" id="global-back" style="display:none" onclick="App.goHub()">← Hub</button>
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- END OVERLAY -->
+<div class="end-overlay" id="end-overlay">
+  <div class="end-emoji" id="end-emoji">🏆</div>
+  <div class="end-title" id="end-title">YOU WIN</div>
+  <div class="end-sub" id="end-sub"></div>
+  <div class="end-prize" id="end-prize" style="display:none"></div>
+  <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-gold btn-lg" id="end-replay">Play Again</button>
+    <button class="btn btn-ghost btn-lg" onclick="App.goHub()">← Hub</button>
+  </div>
+</div>
+
+<!-- FROZEN OVERLAY -->
+<div class="frozen-overlay" id="frozen-overlay">
+  <div class="frozen-text">❄ FROZEN ❄</div>
+  <div style="font-family:var(--font-mono);font-size:56px;font-weight:700;color:#63b3ed;" id="frozen-countdown">100</div>
+  <div style="font-size:15px;color:var(--text-muted);">Prize locked at <span id="frozen-prize-display" style="color:var(--accent-gold);font-weight:700;">€0</span></div>
+  <p style="color:var(--text-muted);font-size:14px;max-width:340px;line-height:1.6;">Timer is frozen. Return to questions for your <strong style="color:var(--accent-red);">Last Chance</strong> — one wrong answer ends it all. Or wait out the clock.</p>
+  <button class="btn btn-red btn-lg" onclick="G1.returnFromFreeze()">↩ Return — Last Chance</button>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="font-size:28px;">⚙ Settings</h3>
+      <button class="btn btn-ghost btn-sm" onclick="UI.closeSettings()">✕</button>
+    </div>
+    <div id="settings-content"></div>
+    <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="UI.closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="UI.saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HUB ═══ -->
+<div id="hub-screen" class="screen active">
+  <div class="hub-header">
+    <p class="eyebrow">🎬 Prime Time Entertainment</p>
+    <h1>TV GAME SHOW <span>HUB</span></h1>
+    <p>College Edition — Italian Game Shows Reimagined</p>
+  </div>
+  <div class="game-grid">
+    <div class="game-card g1" onclick="App.openLobby(1)">
+      <div class="icon">🔵</div><h2>REVERSE LOGIC</h2>
+      <p class="subtitle">Avanti un Altro</p>
+      <p>Pick the <em>wrong</em> answer to climb all 21 questions. Race the clock and protect your prize pool.</p>
+      <div class="play-arrow">PLAY →</div>
+    </div>
+    <div class="game-card g2" onclick="App.openLobby(2)">
+      <div class="icon">🎙️</div><h2>THE DUEL</h2>
+      <p class="subtitle">L'Eredità</p>
+      <p>Two players race each other. Letters reveal randomly — speak the word before your opponent does.</p>
+      <div class="play-arrow" style="color:var(--accent-gold);">PLAY →</div>
+    </div>
+    <div class="game-card g3" onclick="App.openLobby(3)">
+      <div class="icon">🌊</div><h2>WORD CHAIN</h2>
+      <p class="subtitle">Reazione a Catena</p>
+      <p>Teams of 3. One guesser, two clue-givers using one word each. Score points and add time!</p>
+      <div class="play-arrow" style="color:var(--accent-orange);">PLAY →</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOBBY ═══ -->
+<div id="lobby-screen" class="screen">
+  <div class="lobby-header">
+    <p class="game-tag" id="lobby-game-tag">Game 1</p>
+    <h2 id="lobby-title">REVERSE LOGIC</h2>
+  </div>
+  <div class="lobby-grid">
+    <div class="glass-card">
+      <h3 style="font-size:22px;margin-bottom:20px;">Pre-Game Lobby</h3>
+      <div id="lobby-fields"></div>
+      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="UI.openSettings()">⚙ Settings</button>
+        <button class="btn btn-primary btn-lg" onclick="App.startCurrentGame()">Start Game →</button>
+      </div>
+    </div>
+    <div class="glass-card">
+      <h3 style="font-size:22px;margin-bottom:16px;">Game Rules</h3>
+      <div id="lobby-rules" style="font-size:14px;color:var(--text-muted);line-height:1.9;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GAME 1 ═══ -->
+<div id="game1-screen" class="screen">
+  <div class="g1-header">
+    <span class="badge badge-blue">REVERSE LOGIC</span>
+    <div class="g1-prize" id="g1-prize">€50,000</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span id="g1-q-counter" style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">Q 1/21</span>
+      <button class="btn btn-ghost btn-sm" id="g1-freeze-btn" onclick="G1.triggerFreeze()">❄ Freeze</button>
+    </div>
+  </div>
+  <div class="timer-bar-wrap"><div class="timer-bar-fill" id="g1-timer-bar"></div></div>
+  <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:13px;color:var(--text-muted);margin-bottom:10px;">
+    <span>⏱ <span id="g1-timer-display">150</span>s</span>
+    <span id="g1-status-msg"></span>
+  </div>
+  <div class="lc-banner" id="g1-lc-banner"><p>⚠ LAST CHANCE ⚠</p></div>
+  <div class="led-row" id="g1-leds"></div>
+  <div class="question-card" id="g1-qcard">
+    <div class="qnum" id="g1-qnum">Question 1 of 21</div>
+    <div class="qtext" id="g1-qtext">Loading...</div>
+  </div>
+  <div class="answers-grid" id="g1-answers"></div>
+</div>
+
+<!-- ═══ GAME 2 ═══ -->
+<div id="game2-screen" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+    <span class="badge badge-gold">THE DUEL</span>
+    <span id="g2-round-info" style="font-family:var(--font-mono);font-size:13px;color:var(--text-muted);">Round 1</span>
+  </div>
+  <div class="duel-arena">
+    <div class="player-panel" id="g2-panel1">
+      <p class="p-label">Player 1</p>
+      <p class="p-name" id="g2-p1-name">Player 1</p>
+      <p class="p-score" id="g2-p1-score">0</p>
+      <p class="p-label">Points</p>
+      <div class="timer-ring" style="margin-top:16px;">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="38" stroke-width="6"/>
+          <circle class="ring-fill" cx="45" cy="45" r="38" stroke-width="6" stroke="#f6c90e" stroke-dasharray="238.76" stroke-dashoffset="0" id="g2-ring1"/>
+        </svg>
+        <span class="ring-text" id="g2-p1-timer">60</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:20px;">
+      <div style="font-size:36px;font-family:var(--font-display);color:var(--text-muted);">VS</div>
+    </div>
+    <div class="player-panel" id="g2-panel2">
+      <p class="p-label">Player 2</p>
+      <p class="p-name" id="g2-p2-name">Player 2</p>
+      <p class="p-score" id="g2-p2-score">0</p>
+      <p class="p-label">Points</p>
+      <div class="timer-ring" style="margin-top:16px;">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle class="ring-bg" cx="45" cy="45" r="38" stroke-width="6"/>
+          <circle class="ring-fill" cx="45" cy="45" r="38" stroke-width="6" stroke="#f6c90e" stroke-dasharray="238.76" stroke-dashoffset="0" id="g2-ring2"/>
+        </svg>
+        <span class="ring-text" id="g2-p2-timer">60</span>
+      </div>
+    </div>
+  </div>
+  <div class="word-reveal">
+    <p class="definition-text" id="g2-definition">Loading...</p>
+    <div class="letter-boxes" id="g2-letter-boxes"></div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="G2.revealHint()">💡 Reveal Letter</button>
+      <button class="btn btn-primary btn-sm" onclick="G2.nextWord()">Next Word →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GAME 3 ═══ -->
+<div id="game3-screen" class="screen">
+  <div class="rac-header">
+    <div>
+      <div class="rac-title">REAZIONE A CATENA</div>
+      <div class="rac-team" id="g3-team-tag"></div>
+    </div>
+    <div>
+      <div class="rac-timer" id="g3-timer">60</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.1em;text-align:center;">seconds</div>
+    </div>
+    <div>
+      <div class="rac-score" id="g3-score">0</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.1em;text-align:right;">points</div>
+    </div>
+  </div>
+  <div class="timer-bar-wrap">
+    <div class="timer-bar-fill" id="g3-timer-bar" style="background:linear-gradient(90deg,#0090d0,#00c8ff);"></div>
+  </div>
+  <div class="rac-word-card">
+    <div class="rac-word-label">Guess This Word</div>
+    <div class="rac-word" id="g3-current-word">—</div>
+    <div class="rac-hint" id="g3-current-hint"></div>
+    <div class="rac-meta" id="g3-passes-left">Passes left: 3</div>
+  </div>
+  <div class="rac-controls">
+    <button class="rac-btn rac-btn-correct" onclick="G3.answer(1)">✓ CORRECT</button>
+    <button class="rac-btn rac-btn-wrong" onclick="G3.answer(-1)">✗ WRONG</button>
+    <button class="rac-btn rac-btn-pass" id="g3-pass-btn" onclick="G3.answer(0)">PASS</button>
+  </div>
+  <div class="rac-log" id="g3-log"></div>
+</div>
+
+<!-- ═══ RESULTS ═══ -->
+<div id="results-screen" class="screen">
+  <div style="text-align:center;">
+    <div style="font-size:80px;margin-bottom:16px;">🏆</div>
+    <h1 style="font-size:64px;margin-bottom:8px;">FINAL SCORES</h1>
+    <p style="color:var(--text-muted);margin-bottom:32px;" id="results-game-name"></p>
+    <div class="score-board" id="score-board"></div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-gold btn-lg" onclick="App.playAgain()">Play Again</button>
+      <button class="btn btn-ghost btn-lg" onclick="App.goHub()">← Back to Hub</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+<script>
+"use strict";
+
+// ════════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ════════════════════════════════════════════════════════════
+const Audio = (() => {
+  let ctx = null;
+  const _ctx = () => { if (!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); return ctx; };
+  const tone = (freq, dur, type='sine', vol=0.35, fade=true) => {
+    const c = _ctx(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type=type; o.frequency.value=freq; g.gain.value=vol;
+    if(fade) g.gain.exponentialRampToValueAtTime(0.001, c.currentTime+dur);
+    o.start(c.currentTime); o.stop(c.currentTime+dur);
+  };
+  let tenseSrc=null, tenseG=null;
+  const startTense = () => {
+    const c=_ctx(); tenseG=c.createGain(); tenseG.gain.value=0.05; tenseG.connect(c.destination);
+    tenseSrc=[[220,0],[233,0],[165,0.01]].map(([f])=>{ const o=c.createOscillator(); o.type='sine'; o.frequency.value=f; o.connect(tenseG); o.start(); return o; });
+  };
+  const stopTense = () => { if(tenseSrc){tenseSrc.forEach(o=>{try{o.stop();}catch(e){}});tenseSrc=null;} if(tenseG){try{tenseG.disconnect();}catch(e){}tenseG=null;} };
+  const victory = () => { [[523,0],[659,0.12],[784,0.26],[1047,0.44]].forEach(([f,t])=>{ setTimeout(()=>tone(f,0.5,'triangle',0.28,true),t*1000); }); };
+  const defeat  = () => { [[392,0],[330,0.22],[294,0.46],[220,0.72]].forEach(([f,t])=>{ setTimeout(()=>tone(f,0.6,'sawtooth',0.2,true),t*1000); }); };
+  return {
+    tick()   { tone(900,0.07,'square',0.15); },
+    ding()   { tone(1046,0.15,'sine',0.38,true); setTimeout(()=>tone(1318,0.25,'sine',0.38,true),110); },
+    buzzer() { tone(110,0.55,'sawtooth',0.45,true); },
+    frozen() { tone(330,1.3,'sine',0.38,true); },
+    victory, defeat, startTense, stopTense
+  };
+})();
+
+// ════════════════════════════════════════════════════════════
+//  SPEECH CONTROLLER
+// ════════════════════════════════════════════════════════════
+const Speech = (() => {
+  let rec=null, active=false, cb=null;
+  const ok = 'webkitSpeechRecognition' in window||'SpeechRecognition' in window;
+
+  // Called once globally on first use — subsequent calls just update the callback
+  const init = (callback) => {
+    cb=callback;
+    if(!ok) return;
+    if(rec){ cb=callback; return; } // already created — just swap callback, no new permission prompt
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    rec=new SR();
+    rec.continuous=true; rec.interimResults=true; rec.lang='en-US';
+    rec.onresult=(e)=>{ let t=''; for(let i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript; if(cb) cb(t.trim().toLowerCase()); };
+    // Auto-restart on end only while active — keeps mic open without re-prompting
+    rec.onend=()=>{ if(active){ try{rec.start();}catch(e){} } };
+    rec.onerror=(e)=>{ if(e.error==='not-allowed'||e.error==='service-not-allowed') active=false; };
+  };
+
+  const start=()=>{
+    if(!ok||active)return;
+    if(!rec) return; // must call init first
+    active=true;
+    try{ rec.start(); }catch(e){}
+  };
+
+  // Pause recognition (mute) without destroying the object — avoids re-permission on next start
+  const stop=()=>{
+    if(!ok||!active)return;
+    active=false;
+    try{ rec.stop(); }catch(e){}
+  };
+
+  const setCb=(fn)=>{ cb=fn; };
+
+  return { init, start, stop, setCb, isActive:()=>active };
+})();
+
+// ════════════════════════════════════════════════════════════
+//  UI STATE HANDLER
+// ════════════════════════════════════════════════════════════
+const UI = (() => {
+  let toastT=null;
+  const show = (id) => {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id+'-screen').classList.add('active');
+    document.getElementById('global-back').style.display = id==='hub'?'none':'';
+  };
+  const toast = (msg, dur=2600) => {
+    const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+    clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),dur);
+  };
+  const openSettings = () => {
+    const g=State.currentGame, s=State.settings;
+    let h='';
+    if(g===1) h=`<div class="settings-grid">
+      <div class="field-group"><label class="label">Main Timer (s)</label><input class="input-field" id="s-t" type="number" value="${s.g1Timer}" min="60" max="360"></div>
+      <div class="field-group"><label class="label">Frozen Timer (s)</label><input class="input-field" id="s-f" type="number" value="${s.g1Frozen}" min="20" max="180"></div>
+    </div>`;
+    else if(g===2) h=`<div class="settings-grid">
+      <div class="field-group"><label class="label">P1 Time (s)</label><input class="input-field" id="s-p1" type="number" value="${s.g2P1Time}" min="20" max="120"></div>
+      <div class="field-group"><label class="label">P2 Time (s)</label><input class="input-field" id="s-p2" type="number" value="${s.g2P2Time}" min="20" max="120"></div>
+    </div>`;
+    else h=`<div class="field-group"><label class="label">Round Time (s)</label><input class="input-field" id="s-rt" type="number" value="${s.g3RoundTime}" min="30" max="120"></div>`;
+    document.getElementById('settings-content').innerHTML=h;
+    document.getElementById('settings-modal').classList.add('active');
+  };
+  const saveSettings = () => {
+    const g=State.currentGame, s=State.settings, v=id=>{ const el=document.getElementById(id); return el?parseFloat(el.value):null; };
+    if(g===1){s.g1Timer=v('s-t')||150; s.g1Frozen=v('s-f')||100;}
+    if(g===2){s.g2P1Time=v('s-p1')||60; s.g2P2Time=v('s-p2')||60;}
+    if(g===3){s.g3RoundTime=v('s-rt')||60;}
+    closeSettings(); toast('✓ Settings saved');
+  };
+  const closeSettings = () => document.getElementById('settings-modal').classList.remove('active');
+  const showEnd = (win, title, sub, prize, replayFn) => {
+    const ov=document.getElementById('end-overlay');
+    document.getElementById('end-emoji').textContent = win?'🏆':'💔';
+    document.getElementById('end-title').textContent = title;
+    document.getElementById('end-sub').textContent   = sub;
+    const pe=document.getElementById('end-prize');
+    if(prize!=null){pe.textContent=prize;pe.style.display='block';}else pe.style.display='none';
+    ov.style.background = win?'rgba(0,0,0,0.9)':'rgba(8,0,0,0.94)';
+    ov.classList.add('active');
+    document.getElementById('end-replay').onclick=()=>{ov.classList.remove('active');replayFn();};
+    win?Audio.victory():Audio.defeat();
+  };
+  return { show, toast, openSettings, saveSettings, closeSettings, showEnd };
+})();
+
+// ════════════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ════════════════════════════════════════════════════════════
+const State = {
+  currentGame:0,
+  players:{ p1:'Player 1', p2:'Player 2', team:'Team' },
+  settings:{ g1Timer:150, g1Frozen:100, g1StartPrize:50000, g2P1Time:60, g2P2Time:60, g3RoundTime:60 }
+};
+
+// ════════════════════════════════════════════════════════════
+//  DATASETS
+// ════════════════════════════════════════════════════════════
+const DATA = {
+
+g1Questions:[
+  {q:"What is the capital of Italy?",options:["Rome","Milan","Naples","Venice"]},
+  {q:"Who painted the Mona Lisa?",options:["Leonardo da Vinci","Michelangelo","Raphael","Caravaggio"]},
+  {q:"What is the chemical formula for water?",options:["H₂O","CO₂","NaCl","O₂"]},
+  {q:"Which planet is closest to the Sun?",options:["Mercury","Venus","Mars","Earth"]},
+  {q:"How many sides does a hexagon have?",options:["Six","Five","Seven","Eight"]},
+  {q:"Who wrote 'Romeo and Juliet'?",options:["William Shakespeare","Charles Dickens","Jane Austen","John Milton"]},
+  {q:"What is the largest ocean on Earth?",options:["Pacific Ocean","Atlantic Ocean","Indian Ocean","Arctic Ocean"]},
+  {q:"What gas do plants absorb during photosynthesis?",options:["Carbon dioxide","Oxygen","Nitrogen","Hydrogen"]},
+  {q:"In which country were the modern Olympic Games revived in 1896?",options:["Greece","France","United Kingdom","United States"]},
+  {q:"What is the powerhouse of the cell?",options:["Mitochondria","Nucleus","Ribosome","Vacuole"]},
+  {q:"What language is spoken in Brazil?",options:["Portuguese","Spanish","French","English"]},
+  {q:"Who invented the telephone?",options:["Alexander Graham Bell","Thomas Edison","Nikola Tesla","Guglielmo Marconi"]},
+  {q:"How many bones are in the adult human body?",options:["206","208","198","212"]},
+  {q:"What is the speed of light (approximately)?",options:["300,000 km/s","150,000 km/s","500,000 km/s","100,000 km/s"]},
+  {q:"Which element has the symbol 'Au'?",options:["Gold","Silver","Copper","Iron"]},
+  {q:"Who developed the theory of relativity?",options:["Albert Einstein","Isaac Newton","Niels Bohr","Max Planck"]},
+  {q:"What does GDP stand for?",options:["Gross Domestic Product","General Domestic Price","Grand Distribution Policy","Global Debt Portfolio"]},
+  {q:"Which war ended in 1945?",options:["World War II","World War I","Korean War","Vietnam War"]},
+  {q:"Who wrote '1984'?",options:["George Orwell","Aldous Huxley","Ray Bradbury","H.G. Wells"]},
+  {q:"Which organ produces insulin in the human body?",options:["Pancreas","Liver","Kidney","Spleen"]},
+  {q:"What is the capital of Japan?",options:["Tokyo","Osaka","Kyoto","Hiroshima"]},
+  {q:"Who was the first person to walk on the Moon?",options:["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","John Glenn"]},
+  {q:"In which country is the Amazon rainforest primarily located?",options:["Brazil","Peru","Colombia","Venezuela"]},
+  {q:"What is the freezing point of water in Celsius?",options:["0°C","100°C","-10°C","32°C"]},
+  {q:"Which scientist formulated the laws of motion?",options:["Isaac Newton","Galileo Galilei","Johannes Kepler","René Descartes"]},
+  {q:"What is the most spoken language in the world by native speakers?",options:["Mandarin Chinese","English","Spanish","Hindi"]},
+  {q:"How many continents are there on Earth?",options:["Seven","Six","Eight","Five"]},
+  {q:"What does DNA stand for?",options:["Deoxyribonucleic Acid","Diribose Nucleic Acid","Dinucleic Acid","Dioxynuclear Acid"]},
+  {q:"Which philosopher wrote 'The Republic'?",options:["Plato","Aristotle","Socrates","Descartes"]},
+  {q:"What is Newton's First Law of Motion commonly called?",options:["The Law of Inertia","The Law of Gravity","The Law of Acceleration","The Law of Energy"]},
+  {q:"Who painted the Sistine Chapel ceiling?",options:["Michelangelo","Leonardo da Vinci","Botticelli","Raphael"]},
+  {q:"What is the longest river in the world?",options:["Nile","Amazon","Yangtze","Mississippi"]},
+  {q:"In which city is the Colosseum located?",options:["Rome","Athens","Cairo","Istanbul"]},
+  {q:"Which planet is known as the Red Planet?",options:["Mars","Jupiter","Venus","Saturn"]},
+  {q:"What is the chemical symbol for sodium?",options:["Na","So","Sd","Ni"]},
+  {q:"Who wrote 'Don Quixote'?",options:["Miguel de Cervantes","Lope de Vega","Francisco de Quevedo","Tirso de Molina"]},
+  {q:"What is the name of the process by which plants make food?",options:["Photosynthesis","Respiration","Digestion","Fermentation"]},
+  {q:"What is the boiling point of water at sea level?",options:["100°C","90°C","110°C","80°C"]},
+  {q:"Which is the smallest planet in our solar system?",options:["Mercury","Mars","Venus","Pluto"]},
+  {q:"In music, how many notes are in a standard Western scale (octave)?",options:["Eight","Seven","Six","Ten"]},
+  {q:"What does URL stand for?",options:["Uniform Resource Locator","Universal Reference Link","Unified Routing Layer","User Resource Location"]},
+  {q:"What is the chemical symbol for iron?",options:["Fe","Ir","In","Fo"]},
+  {q:"Who wrote the Iliad and the Odyssey?",options:["Homer","Virgil","Sophocles","Plato"]},
+  {q:"What is the SI unit of electrical current?",options:["Ampere","Volt","Watt","Ohm"]},
+  {q:"What is the main ingredient in traditional Italian pasta?",options:["Durum wheat semolina","Rice flour","Corn flour","Spelt flour"]},
+  {q:"Which country has the largest population in the world?",options:["China","India","USA","Indonesia"]},
+  {q:"What is the capital of Australia?",options:["Canberra","Sydney","Melbourne","Brisbane"]},
+  {q:"In which year did the Titanic sink?",options:["1912","1914","1908","1920"]},
+  {q:"How many chambers does the human heart have?",options:["Four","Two","Three","Six"]},
+  {q:"What is the hardest natural substance on Earth?",options:["Diamond","Ruby","Quartz","Titanium"]},
+],
+
+g2Words:[
+  {word:"DEMOCRACY",    def:"A system of government where citizens vote to elect their representatives and leaders."},
+  {word:"METAPHOR",     def:"A figure of speech that directly compares two unlike things without using 'like' or 'as'."},
+  {word:"GRAVITY",      def:"The natural force that pulls all objects with mass toward each other, keeping us on the ground."},
+  {word:"EVOLUTION",    def:"The gradual process by which living organisms change over generations through natural selection."},
+  {word:"INFLATION",    def:"A sustained increase in the general level of prices for goods and services over time."},
+  {word:"HYPOTHESIS",   def:"A proposed, testable explanation for an observation that can be investigated through experiment."},
+  {word:"CAPITALISM",   def:"An economic system based on private ownership of production and free competitive markets."},
+  {word:"SYMMETRY",     def:"Exact correspondence of shape or arrangement on both sides of a dividing line or plane."},
+  {word:"PSYCHOLOGY",   def:"The scientific study of the human mind, behavior, emotions and mental processes."},
+  {word:"IRONY",        def:"A rhetorical device where the intended meaning is opposite to what is literally expressed."},
+  {word:"ECOSYSTEM",    def:"A biological community of interacting organisms together with their physical environment."},
+  {word:"MOMENTUM",     def:"A measure of motion equal to the product of an object's mass and its velocity."},
+  {word:"PROPAGANDA",   def:"Information, often biased or misleading, designed to promote a political cause or viewpoint."},
+  {word:"PHOTOSYNTHESIS",def:"The process by which plants convert sunlight, water and CO₂ into glucose and oxygen."},
+  {word:"CONSTITUTION", def:"The fundamental laws and principles of a nation that determine how it is governed."},
+  {word:"ALLEGORY",     def:"A story or image with a secondary hidden meaning, typically moral or political in nature."},
+  {word:"BACTERIA",     def:"Microscopic single-celled organisms found everywhere; some harmful, many beneficial to life."},
+  {word:"PHILOSOPHY",   def:"The systematic study of fundamental questions about existence, knowledge, ethics and reality."},
+  {word:"VELOCITY",     def:"The speed of an object in a given direction — a vector quantity distinct from scalar speed."},
+  {word:"PARADOX",      def:"A statement that appears self-contradictory but may actually express a deeper truth."},
+  {word:"SATIRE",       def:"The use of humor, irony or exaggeration to criticize and expose human folly or social issues."},
+  {word:"OSMOSIS",      def:"Movement of solvent molecules through a semipermeable membrane from lower to higher concentration."},
+  {word:"REFERENDUM",   def:"A direct popular vote in which citizens decide on a specific political or governmental question."},
+  {word:"METABOLISM",   def:"The set of chemical reactions in an organism that sustain life, including converting food to energy."},
+  {word:"ORCHESTRA",    def:"A large ensemble of musicians playing various instruments, typically led by a conductor."},
+  {word:"CHROMOSOME",   def:"A thread-like structure in the cell nucleus carrying genetic information in the form of genes."},
+  {word:"BUREAUCRACY",  def:"A complex system of government or organization with many complicated rules and processes."},
+  {word:"RENAISSANCE",  def:"The great European cultural and artistic revival of the 14th–17th centuries, beginning in Italy."},
+  {word:"MYTHOLOGY",    def:"A collection of traditional stories explaining natural phenomena, history and cultural practices."},
+  {word:"TELESCOPE",    def:"An optical instrument that magnifies distant objects, especially used in astronomy to observe stars."},
+  {word:"PARLIAMENT",   def:"A legislative body of government where elected representatives debate and pass laws."},
+  {word:"EROSION",      def:"The gradual wearing away of rock or soil by water, wind or other natural forces over time."},
+  {word:"ANTHOLOGY",    def:"A published collection of selected writings, poems or musical compositions by various authors."},
+  {word:"EPIDEMIC",     def:"A widespread occurrence of an infectious disease affecting many people at the same time."},
+  {word:"GEOGRAPHY",    def:"The study of Earth's physical features, climate, populations and their distribution across regions."},
+  {word:"HEMISPHERE",   def:"One half of a sphere; used to describe the northern or southern halves of Earth."},
+  {word:"BIOGRAPHY",    def:"A detailed written account of another person's life, written from an outside perspective."},
+  {word:"IDEOLOGY",     def:"A system of ideas and ideals that forms the basis of an economic or political theory."},
+  {word:"CARNIVORE",    def:"An animal that feeds primarily or exclusively on the flesh of other animals."},
+  {word:"SKEPTICISM",   def:"A questioning attitude toward knowledge, facts or opinions that are commonly held to be true."},
+  {word:"LATITUDE",     def:"A geographic coordinate that specifies a location's north-south position on the Earth's surface."},
+  {word:"THERMOMETER",  def:"An instrument used to measure temperature, typically using mercury or digital electronic sensors."},
+  {word:"PENINSULA",    def:"A piece of land almost entirely surrounded by water but connected to the mainland on one side."},
+  {word:"ELECTRICITY",  def:"A form of energy resulting from the flow of electric charge through a conductor."},
+  {word:"ATMOSPHERE",   def:"The layer of gases surrounding the Earth, held in place by gravity, that enables life."},
+  {word:"NARRATIVE",    def:"A spoken or written account of connected events; a story told from a particular perspective."},
+  {word:"CARNIVORE",    def:"An organism that derives its energy and nutrient requirements from eating animal tissue."},
+  {word:"MONOPOLY",     def:"A market situation where a single seller controls the entire supply of a product or service."},
+  {word:"DEMOCRACY",    def:"A political system in which power is vested in the people through free and fair elections."},
+  {word:"CATALYST",     def:"A substance that increases the rate of a chemical reaction without itself being consumed."},
+],
+
+g3Words:[
+  {word:"OCEAN",hint:"Largest body of saltwater on Earth"},
+  {word:"VOLCANO",hint:"Mountain that can erupt with lava"},
+  {word:"DEMOCRACY",hint:"Government by the people"},
+  {word:"GRAVITY",hint:"Force pulling objects to Earth"},
+  {word:"METAPHOR",hint:"Comparing without 'like' or 'as'"},
+  {word:"PROTEIN",hint:"Amino acid chains — muscle builder"},
+  {word:"INFLATION",hint:"General rise in prices over time"},
+  {word:"REVOLUTION",hint:"Sudden political upheaval"},
+  {word:"HYPOTHESIS",hint:"Testable scientific explanation"},
+  {word:"ECOSYSTEM",hint:"Community of organisms + environment"},
+  {word:"MOMENTUM",hint:"Mass times velocity"},
+  {word:"IRONY",hint:"Saying the opposite of what you mean"},
+  {word:"CAPITALISM",hint:"Private ownership-based economy"},
+  {word:"NARRATIVE",hint:"A story with connected events"},
+  {word:"SATIRE",hint:"Humor criticizing society"},
+  {word:"BACTERIA",hint:"Single-celled microorganisms"},
+  {word:"ALLEGORY",hint:"Story with a hidden moral meaning"},
+  {word:"SYMMETRY",hint:"Mirror-image balance"},
+  {word:"VELOCITY",hint:"Speed in a given direction"},
+  {word:"PARADOX",hint:"True-seeming contradiction"},
+  {word:"PHILOSOPHY",hint:"Study of existence and knowledge"},
+  {word:"PROPAGANDA",hint:"Biased info promoting a cause"},
+  {word:"EVOLUTION",hint:"Species change over generations"},
+  {word:"BIOGRAPHY",hint:"Written account of someone's life"},
+  {word:"CONSTITUTION",hint:"Founding laws of a nation"},
+  {word:"OSMOSIS",hint:"Water movement through a membrane"},
+  {word:"GENOME",hint:"Complete DNA of an organism"},
+  {word:"ALGORITHM",hint:"Step-by-step problem-solving process"},
+  {word:"RHETORIC",hint:"Art of persuasive speaking"},
+  {word:"DEDUCTION",hint:"Reasoning from general to specific"},
+  {word:"FOSSIL",hint:"Preserved remains of ancient life"},
+  {word:"TAXONOMY",hint:"Scientific classification of life"},
+  {word:"CATALYST",hint:"Speeds reactions without being used up"},
+  {word:"ENTROPY",hint:"Measure of disorder in a system"},
+  {word:"UTOPIA",hint:"Imagined perfect society"},
+  {word:"ISOTOPE",hint:"Same element, different neutron count"},
+  {word:"FRACTAL",hint:"Self-repeating pattern at every scale"},
+  {word:"NIHILISM",hint:"Belief that life has no inherent meaning"},
+  {word:"EMPIRICISM",hint:"Knowledge comes from experience"},
+  {word:"ZEITGEIST",hint:"Spirit or mood of a time period"},
+  {word:"PENINSULA",hint:"Land surrounded by water on three sides"},
+  {word:"ATMOSPHERE",hint:"Gas layer surrounding Earth"},
+  {word:"CHROMOSOME",hint:"Carries DNA in cell nucleus"},
+  {word:"RENAISSANCE",hint:"European cultural revival, began in Italy"},
+  {word:"PARLIAMENT",hint:"Legislature of elected members"},
+  {word:"MYTHOLOGY",hint:"Traditional stories about gods and heroes"},
+  {word:"TELESCOPE",hint:"Magnifies distant objects — used by astronomers"},
+  {word:"EPIDEMIC",hint:"Widespread infectious disease outbreak"},
+  {word:"GEOGRAPHY",hint:"Study of Earth's physical features"},
+  {word:"HEMISPHERE",hint:"Half of the Earth — north or south"},
+  {word:"METABOLISM",hint:"Converting food to energy in the body"},
+  {word:"ELECTRICITY",hint:"Energy from flow of electric charge"},
+  {word:"LATITUDE",hint:"North-south geographic coordinate"},
+  {word:"IDEOLOGY",hint:"System of political or social ideas"},
+  {word:"CARNIVORE",hint:"Animal that only eats meat"},
+  {word:"EROSION",hint:"Wearing away of rock or soil by nature"},
+  {word:"ANTHOLOGY",hint:"Collection of selected literary works"},
+  {word:"BUREAUCRACY",hint:"Complex system of rules and officials"},
+  {word:"MONOPOLY",hint:"Single seller controls entire market"},
+  {word:"SKEPTICISM",hint:"Questioning attitude toward accepted truth"},
+]
+
+};
+
+// ════════════════════════════════════════════════════════════
+//  APP CONTROLLER
+// ════════════════════════════════════════════════════════════
+const App = {
+  openLobby(g){
+    State.currentGame=g;
+    const names=['','REVERSE LOGIC','THE DUEL','WORD CHAIN'];
+    const tags=['','Game 1 — Avanti un Altro','Game 2 — L\'Eredità','Game 3 — Reazione a Catena'];
+    document.getElementById('lobby-game-tag').textContent=tags[g];
+    document.getElementById('lobby-title').textContent=names[g];
+
+    const fields={
+      1:`<div class="field-group"><label class="label">Your Name</label><input class="input-field" id="p1-name" placeholder="Player name..." value="Player"></div>
+         <div class="field-group"><label class="label">Starting Prize (€)</label><input class="input-field" id="prize-pool" type="number" value="${State.settings.g1StartPrize}" min="1000" step="1000"></div>`,
+      2:`<div class="field-group"><label class="label">Player 1 Name</label><input class="input-field" id="p1-name" placeholder="Player 1..." value="Player 1"></div>
+         <div class="field-group"><label class="label">Player 2 Name</label><input class="input-field" id="p2-name" placeholder="Player 2..." value="Player 2"></div>`,
+      3:`<div class="field-group"><label class="label">Team Name</label><input class="input-field" id="team-name" placeholder="Team name..." value="Team"></div>`
+    };
+    document.getElementById('lobby-fields').innerHTML=fields[g];
+
+    const rules={
+      1:`<strong>🔵 The Inverse Rule:</strong> Pick the <em>wrong</em> answer to advance. Picking the correct one sends you back to Question 1!<br><br>
+         <strong>🎙 Voice Activated:</strong> The game listens for your voice automatically. Just say "A" or "B" (or say the answer text). Say <strong>"Freeze"</strong> to lock your prize. Say <strong>"Skip"</strong> to move to the next question.<br><br>
+         <strong>⏱ Timer &amp; Money:</strong> At 30s left, your prize is halved. After that, €1,000 is deducted every second. Win before time runs out — or Freeze first!<br><br>
+         <strong>❄ Freeze:</strong> Locks the timer and your current prize. You can return to the questions for a <strong>Last Chance</strong> round (no timer, no skips) — but one wrong pick ends the game.<br><br>
+         <strong>⏭ Skip:</strong> Move to the next question freely during normal play. Skipped questions (yellow LED) come back at the end. Skipping is <strong>disabled</strong> during Last Chance.<br><br>
+         <strong>🏆 Win:</strong> Answer all 21 questions (choosing wrong each time) to claim your prize!`,
+      2:`<strong>🎙 Always Listening:</strong> The microphone is active the whole game — just say the word when you know it!<br><br>
+         <strong>💡 Letters Reveal:</strong> One random letter appears every 2.5 seconds. The sooner you guess, the more bonus points you earn.<br><br>
+         <strong>⏱ Dual Timers:</strong> Each player has their own countdown. Only the active player's timer ticks down.<br><br>
+         <strong>↔ Switching:</strong> A correct answer instantly switches to the other player. Press "Next Word" or Enter to manually advance.<br><br>
+         <strong>🏆 Win:</strong> The player with more points when both timers expire wins the Duel.`,
+      3:`<strong>👥 Teams of 3:</strong> One player sits <strong>blindfolded or facing away</strong> — they are the Guesser and cannot see the screen. The other two face the screen and give clues.<br><br>
+         <strong>🗣 One Word Each:</strong> The two clue-givers alternate giving exactly <strong>one word at a time</strong> as a hint. No phrases, no gestures — single words only!<br><br>
+         <strong>✓ Correct (+1 pt, +5s):</strong> The Guesser says the word — score a point and gain 5 extra seconds on the clock!<br><br>
+         <strong>✗ Wrong (−1 pt):</strong> The Guesser says a wrong word — lose 1 point. No time penalty. Next word loads.<br><br>
+         <strong>PASS (no penalty):</strong> Skip the word freely — but you only have <strong>3 passes</strong> per round!<br><br>
+         <strong>⏱ Round:</strong> Play until time runs out. Rack up as many points as possible!`
+    };
+    document.getElementById('lobby-rules').innerHTML=rules[g];
+    UI.show('lobby');
+  },
+
+  startCurrentGame(){
+    State.players.p1  =(document.getElementById('p1-name')?.value)||'Player 1';
+    State.players.p2  =(document.getElementById('p2-name')?.value)||'Player 2';
+    State.players.team=(document.getElementById('team-name')?.value)||'Team';
+    State.settings.g1StartPrize=parseInt(document.getElementById('prize-pool')?.value)||50000;
+    const g=State.currentGame;
+    if(g===1)G1.init();
+    else if(g===2)G2.init();
+    else G3.init();
+  },
+
+  goHub(){
+    G1.cleanup();G2.cleanup();G3.cleanup();Speech.stop();Audio.stopTense();
+    document.getElementById('end-overlay').classList.remove('active');
+    document.getElementById('frozen-overlay').classList.remove('active');
+    UI.show('hub');
+  },
+
+  playAgain(){ App.openLobby(State.currentGame); },
+
+  showResults(scores){
+    const names=['','Reverse Logic','The Duel','Word Chain'];
+    document.getElementById('results-game-name').textContent=names[State.currentGame]+' — Final Scores';
+    const sorted=[...scores].sort((a,b)=>b.score-a.score);
+    document.getElementById('score-board').innerHTML=sorted.map((p,i)=>`
+      <div class="score-row ${i===0?'winner':''}">
+        <span class="rank">${['🥇','🥈','🥉'][i]||''}</span>
+        <span class="name">${p.name}</span>
+        <span class="pts">${typeof p.score==='number'?p.score.toLocaleString():p.score}</span>
+      </div>`).join('');
+    UI.show('results');
+  }
+};
+
+// ════════════════════════════════════════════════════════════
+//  GAME ENGINE 1: REVERSE LOGIC
+// ════════════════════════════════════════════════════════════
+const G1 = (() => {
+  let questions=[], order=[], idx=0;
+  let pairs=[];          // pre-baked [{q, optA, optB, correctIsA}] — fixed for the whole round
+  let prize=50000, timerMax=150, timeLeft=150;
+  let mainInt=null, frozenInt=null;
+  let frozen=false, lastChance=false, dead=false;
+  let skipped=new Set(), deductedHalf=false;
+
+  const init = () => {
+    questions = shuffle([...DATA.g1Questions]).slice(0,21);
+    order = Array.from({length:21},(_,i)=>i);
+
+    // Pre-bake answer pairs ONCE — they stay fixed for the entire round including restarts & Last Chance
+    pairs = questions.map(q => {
+      const wrongIdx = Math.floor(Math.random()*(q.options.length-1))+1;
+      const twoShuffled = shuffle([
+        {text:q.options[0], correct:true},
+        {text:q.options[wrongIdx], correct:false}
+      ]);
+      return twoShuffled; // array of 2 [{text,correct}]
+    });
+
+    idx=0; frozen=false; lastChance=false; dead=false;
+    skipped=new Set(); deductedHalf=false;
+    prize=State.settings.g1StartPrize;
+    timerMax=State.settings.g1Timer; timeLeft=timerMax;
+
+    document.getElementById('g1-lc-banner').classList.remove('active');
+    document.getElementById('g1-freeze-btn').disabled=false;
+
+    buildLEDs(); renderQ(); startMainTimer();
+    // Init speech once; if already active just swap callback
+    Speech.init(handleVoice);
+    Speech.setCb(handleVoice);
+    Speech.start();
+    UI.show('game1');
+  };
+
+  const buildLEDs = () => {
+    document.getElementById('g1-leds').innerHTML=
+      Array.from({length:21},(_,i)=>`<div class="led" id="led${i}"></div>`).join('');
+  };
+
+  const updateLEDs = () => {
+    for(let i=0;i<21;i++){
+      const el=document.getElementById('led'+i); if(!el)continue;
+      const qi=order[i];
+      if(i<idx)              el.className='led blue';          // answered
+      else if(i===idx)       el.className='led gold';          // current
+      else if(skipped.has(qi)) el.className='led gold';        // skipped (yellow/gold)
+      else                   el.className='led';               // pending
+    }
+  };
+
+  const renderQ = () => {
+    if(dead)return;
+    if(idx>=order.length){winGame();return;}
+    const qi=order[idx], q=questions[qi];
+    const two=pairs[qi]; // fixed pair for this question — never changes
+    document.getElementById('g1-qnum').textContent=`Question ${idx+1} of 21`;
+    document.getElementById('g1-qtext').textContent=q.q;
+    document.getElementById('g1-q-counter').textContent=`Q ${idx+1}/21`;
+    document.getElementById('g1-prize').textContent='€'+Math.max(0,prize).toLocaleString();
+    document.getElementById('g1-answers').innerHTML=two.map((o,i)=>
+      `<button class="answer-btn" onclick="G1.pick(${i},${o.correct})">
+        <span class="letter">${'AB'[i]}.</span>${o.text}
+       </button>`).join('');
+    updateLEDs();
+  };
+
+  const pick = (btnIdx, wasCorrect) => {
+    if(dead)return;
+    const btns=document.querySelectorAll('.answer-btn'); btns.forEach(b=>b.disabled=true);
+    if(wasCorrect){
+      // Chose correct answer → FAIL in reverse logic — reset to Q1 in-place, no overlay
+      btns[btnIdx].classList.add('wrong-reveal');
+      Audio.buzzer();
+      setTimeout(()=>{
+        if(lastChance){ loseGame(); return; }
+        // Reset progress back to question 1, keep timer and money running
+        idx=0; skipped.clear(); order=Array.from({length:21},(_,i)=>i);
+        renderQ();
+      },800);
+    } else {
+      // Chose wrong answer → CORRECT in reverse logic
+      btns[btnIdx].classList.add('correct-reveal');
+      Audio.ding();
+      skipped.delete(order[idx]);
+      setTimeout(()=>{idx++;renderQ();},800);
+    }
+  };
+
+  const handleVoice = (transcript) => {
+    if(dead||frozen)return;
+    if(transcript.includes('freeze')){triggerFreeze();return;}
+    if(!lastChance&&(transcript.includes('skip')||transcript.includes('next question'))){doSkip();return;}
+    // Match spoken answer to button text
+    const btns=[...document.querySelectorAll('.answer-btn')].filter(b=>!b.disabled);
+    if(!btns.length)return;
+    btns.forEach(btn=>{
+      const txt=btn.textContent.trim().toLowerCase().replace(/^[ab]\.\s*/,'');
+      if(txt.length>2&&transcript.includes(txt))btn.click();
+    });
+  };
+
+  const doSkip = () => {
+    if(dead||lastChance||idx>=order.length)return;
+    // Mark current question as skipped, move to next without touching idx twice
+    const qi=order[idx];
+    skipped.add(qi);
+    // Rotate: move this question to the end of the order array
+    order.splice(idx,1);
+    order.push(qi);
+    // idx stays the same — the next question slides into position
+    if(skipped.size===order.length){
+      // All remaining are skipped — clear and cycle back
+      skipped.clear();
+      UI.toast('↩ Returning to skipped questions!');
+    }
+    UI.toast('⏭ Skipped — yellow LED marks it');
+    renderQ();
+  };
+
+  const startMainTimer = () => {
+    clearInterval(mainInt);
+    mainInt=setInterval(()=>{
+      if(frozen||dead)return;
+      timeLeft=Math.max(0,timeLeft-1);
+      updateTimerUI();
+      if(timeLeft===30&&!deductedHalf){deductedHalf=true;prize=Math.floor(prize/2);UI.toast('⚠ 30s left — prize halved!');document.getElementById('g1-prize').textContent='€'+Math.max(0,prize).toLocaleString();}
+      if(timeLeft<30&&deductedHalf){prize=Math.max(0,prize-1000);document.getElementById('g1-prize').textContent='€'+prize.toLocaleString();}
+      if(timeLeft<=5&&timeLeft>0)Audio.tick();
+      if(timeLeft<=0){clearInterval(mainInt);if(!frozen)loseGame();}
+    },1000);
+  };
+
+  const updateTimerUI = () => {
+    const pct=timeLeft/timerMax;
+    const bar=document.getElementById('g1-timer-bar');
+    bar.style.width=(pct*100)+'%';
+    bar.className='timer-bar-fill'+(pct<0.15?' danger':pct<0.35?' warn':'');
+    document.getElementById('g1-timer-display').textContent=timeLeft;
+  };
+
+  const triggerFreeze = () => {
+    if(frozen||dead||lastChance)return;
+    frozen=true; clearInterval(mainInt);
+    Audio.frozen();
+    document.getElementById('g1-freeze-btn').disabled=true;
+    document.getElementById('frozen-prize-display').textContent='€'+prize.toLocaleString();
+    let ft=State.settings.g1Frozen;
+    document.getElementById('frozen-countdown').textContent=ft;
+    document.getElementById('frozen-overlay').classList.add('active');
+    frozenInt=setInterval(()=>{
+      ft--; document.getElementById('frozen-countdown').textContent=ft;
+      if(ft<=0){clearInterval(frozenInt);returnFromFreeze();}
+    },1000);
+  };
+
+  const returnFromFreeze = () => {
+    clearInterval(frozenInt);
+    document.getElementById('frozen-overlay').classList.remove('active');
+    frozen=false; lastChance=true;
+    // Go back to Q1 with the same question order and same pre-baked pairs — identical to what player saw
+    idx=0; skipped.clear();
+    order=Array.from({length:21},(_,i)=>i); // restore original order (no skips in Last Chance)
+    document.getElementById('g1-lc-banner').classList.add('active');
+    document.getElementById('g1-timer-display').textContent='∞';
+    document.getElementById('g1-timer-bar').style.width='100%';
+    document.getElementById('g1-timer-bar').className='timer-bar-fill';
+    Audio.startTense();
+    updateLEDs(); renderQ();
+    UI.toast('⚠ LAST CHANCE — same questions, no timer, no skips!',3500);
+  };
+
+  const winGame = () => {
+    if(dead)return; dead=true; cleanup(); Audio.stopTense();
+    UI.showEnd(true,'YOU WIN!','All 21 answered — outstanding!','€'+prize.toLocaleString(),()=>App.openLobby(1));
+  };
+
+  const loseGame = () => {
+    if(dead)return; dead=true; cleanup(); Audio.stopTense();
+    if(lastChance) UI.showEnd(false,'GAME OVER','So close… Last Chance didn\'t hold.',null,()=>App.openLobby(1));
+    else           UI.showEnd(false,'ELIMINATED','Wrong choice — the game resets.',null,()=>App.openLobby(1));
+  };
+
+  const cleanup = () => {
+    clearInterval(mainInt); clearInterval(frozenInt); Speech.stop();
+    document.getElementById('frozen-overlay').classList.remove('active');
+    document.getElementById('g1-lc-banner').classList.remove('active');
+  };
+
+  return {init,pick,triggerFreeze,returnFromFreeze,cleanup};
+})();
+
+// ════════════════════════════════════════════════════════════
+//  GAME ENGINE 2: THE DUEL
+// ════════════════════════════════════════════════════════════
+const G2 = (() => {
+  let words=[],wIdx=0,round=1,activeP=1;
+  let p1T,p2T,p1S=0,p2S=0;
+  let p1Int=null,p2Int=null,revInt=null;
+  let revealed=0,curWord='',nsMap=[];
+  const C=238.76;
+
+  const init=()=>{
+    words=shuffle([...DATA.g2Words]);
+    wIdx=0;round=1;activeP=1;p1S=0;p2S=0;
+    p1T=State.settings.g2P1Time; p2T=State.settings.g2P2Time;
+    document.getElementById('g2-p1-name').textContent=State.players.p1;
+    document.getElementById('g2-p2-name').textContent=State.players.p2;
+    Speech.init(checkVoice); Speech.setCb(checkVoice); Speech.start();
+    updateScores();updateRings();loadWord();switchTo(1);
+    UI.show('game2');
+  };
+
+  const loadWord=()=>{
+    if(wIdx>=words.length){finish();return;}
+    clearInterval(revInt); const e=words[wIdx];
+    curWord=e.word.toUpperCase(); revealed=0; nsMap=[];
+    document.getElementById('g2-definition').textContent=e.def;
+    document.getElementById('g2-round-info').textContent='Round '+round;
+    buildBoxes();
+    revInt=setInterval(()=>{if(revealed<(nsMap.length||99))revealNext();else clearInterval(revInt);},2500);
+  };
+
+  const buildBoxes=()=>{
+    document.getElementById('g2-letter-boxes').innerHTML=
+      curWord.split('').map((ch,i)=>ch===' '?`<div class="letter-box space-box"></div>`:`<div class="letter-box" id="lb${i}"></div>`).join('');
+  };
+
+  const revealNext=()=>{
+    if(nsMap.length===0){
+      curWord.split('').forEach((ch,i)=>{if(ch!==' ')nsMap.push(i);});
+      for(let i=nsMap.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nsMap[i],nsMap[j]]=[nsMap[j],nsMap[i]];}
+    }
+    if(revealed>=nsMap.length)return;
+    const ix=nsMap[revealed],box=document.getElementById('lb'+ix);
+    if(box){box.textContent=curWord[ix];box.classList.add('revealed');}
+    revealed++;
+  };
+
+  const revealHint=()=>revealNext();
+
+  const checkVoice=(transcript)=>{
+    if(!curWord)return;
+    const clean=curWord.replace(/\s/g,'').toLowerCase();
+    const guess=transcript.replace(/\s/g,'').toLowerCase();
+    if(guess.includes(clean)||(clean.includes(guess)&&guess.length>=3)){
+      clearInterval(revInt); revealAll(); Audio.ding();
+      const pts=100+Math.max(0,50-revealed*5);
+      if(activeP===1)p1S+=pts;else p2S+=pts;
+      updateScores();
+      UI.toast(`✓ ${activeP===1?State.players.p1:State.players.p2} got it!`);
+      round++;wIdx++;switchTo(activeP===1?2:1);loadWord();
+    }
+  };
+
+  const revealAll=()=>{curWord.split('').forEach((ch,i)=>{const b=document.getElementById('lb'+i);if(b&&ch!==' '){b.textContent=ch;b.classList.add('revealed');}});};
+
+  const nextWord=()=>{clearInterval(revInt);round++;wIdx++;switchTo(activeP===1?2:1);loadWord();};
+
+  const switchTo=(p)=>{
+    activeP=p; clearInterval(p1Int);clearInterval(p2Int);
+    document.getElementById('g2-panel1').classList.toggle('active-player',p===1);
+    document.getElementById('g2-panel2').classList.toggle('active-player',p===2);
+    if(p===1){p1Int=setInterval(()=>{p1T=Math.max(0,p1T-1);if(p1T<=5&&p1T>0)Audio.tick();updateRings();if(p1T<=0){clearInterval(p1Int);endP(1);}},1000);}
+    else{p2Int=setInterval(()=>{p2T=Math.max(0,p2T-1);if(p2T<=5&&p2T>0)Audio.tick();updateRings();if(p2T<=0){clearInterval(p2Int);endP(2);}},1000);}
+  };
+
+  const endP=(p)=>{Audio.buzzer();UI.toast(`⏰ ${p===1?State.players.p1:State.players.p2}'s time is up!`);setTimeout(finish,1200);};
+
+  const updateRings=()=>{
+    const t1m=State.settings.g2P1Time,t2m=State.settings.g2P2Time;
+    document.getElementById('g2-p1-timer').textContent=p1T;
+    document.getElementById('g2-p2-timer').textContent=p2T;
+    document.getElementById('g2-ring1').style.strokeDashoffset=C*(1-p1T/t1m);
+    document.getElementById('g2-ring2').style.strokeDashoffset=C*(1-p2T/t2m);
+    document.getElementById('g2-ring1').style.stroke=p1T/t1m<0.2?'var(--accent-red)':'var(--accent-gold)';
+    document.getElementById('g2-ring2').style.stroke=p2T/t2m<0.2?'var(--accent-red)':'var(--accent-gold)';
+  };
+  const updateScores=()=>{document.getElementById('g2-p1-score').textContent=p1S;document.getElementById('g2-p2-score').textContent=p2S;};
+
+  const finish=()=>{
+    cleanup();
+    if(p1S===p2S){UI.showEnd(true,'IT\'S A TIE!',`${State.players.p1} ${p1S} — ${State.players.p2} ${p2S}`,null,()=>App.openLobby(2));return;}
+    const w=p1S>p2S?State.players.p1:State.players.p2;
+    const ws=Math.max(p1S,p2S),ls=Math.min(p1S,p2S);
+    const lo=p1S>p2S?State.players.p2:State.players.p1;
+    UI.showEnd(true,`${w} WINS!`,`${w} ${ws}pts vs ${lo} ${ls}pts`,null,()=>App.openLobby(2));
+  };
+
+  const cleanup=()=>{clearInterval(p1Int);clearInterval(p2Int);clearInterval(revInt);Speech.stop();};
+
+  return{init,revealHint,nextWord,cleanup};
+})();
+
+// ════════════════════════════════════════════════════════════
+//  GAME ENGINE 3: WORD CHAIN
+// ════════════════════════════════════════════════════════════
+const G3 = (() => {
+  let words=[],wIdx=0,timeLeft,timerMax,score=0,timerInt=null,passes=3;
+
+  const init=()=>{
+    words=shuffle([...DATA.g3Words]);
+    wIdx=0;score=0;passes=3;timerMax=State.settings.g3RoundTime;timeLeft=timerMax;
+    document.getElementById('g3-team-tag').textContent=State.players.team;
+    document.getElementById('g3-log').innerHTML='';
+    document.getElementById('g3-pass-btn').disabled=false;
+    render();startTimer();UI.show('game3');
+  };
+
+  const render=()=>{
+    if(wIdx>=words.length){finish();return;}
+    const w=words[wIdx];
+    document.getElementById('g3-current-word').textContent=w.word;
+    document.getElementById('g3-current-hint').textContent='';
+    document.getElementById('g3-passes-left').textContent='Passes left: '+passes;
+    document.getElementById('g3-pass-btn').disabled=passes<=0;
+  };
+
+  const answer=(result)=>{
+    const w=words[wIdx];
+    let cls='',lbl='';
+    if(result===1){
+      score+=1; timeLeft=Math.min(timeLeft+5,timerMax+60);
+      document.getElementById('g3-timer').textContent=timeLeft;
+      Audio.ding(); cls='log-correct'; lbl='+1 pt  +5s';
+    } else if(result===-1){
+      score=Math.max(0,score-1); Audio.buzzer(); cls='log-wrong'; lbl='-1 pt';
+    } else {
+      if(passes<=0)return;
+      passes--; cls=''; lbl='PASS';
+    }
+    document.getElementById('g3-score').textContent=score;
+    const item=document.createElement('div');
+    item.className='rac-log-item '+cls;
+    item.innerHTML=`<span style="font-weight:600;">${w.word}</span><span style="font-family:var(--font-mono);font-size:13px;">${lbl}</span>`;
+    document.getElementById('g3-log').prepend(item);
+    wIdx++;render();
+  };
+
+  const startTimer=()=>{
+    clearInterval(timerInt);
+    timerInt=setInterval(()=>{
+      timeLeft=Math.max(0,timeLeft-1);
+      const el=document.getElementById('g3-timer');
+      el.textContent=timeLeft;
+      el.className='rac-timer'+(timeLeft<=10?' danger':timeLeft<=20?' warn':'');
+      const pct=Math.min(1,timeLeft/timerMax);
+      document.getElementById('g3-timer-bar').style.width=(pct*100)+'%';
+      if(timeLeft<=5&&timeLeft>0)Audio.tick();
+      if(timeLeft<=0){clearInterval(timerInt);finish();}
+    },1000);
+  };
+
+  const finish=()=>{
+    cleanup();
+    UI.showEnd(score>0,score>=5?'GREAT ROUND!':'ROUND OVER',
+      `${State.players.team} scored ${score} point${score!==1?'s':''}!`,
+      null,()=>App.openLobby(3));
+  };
+
+  const cleanup=()=>{clearInterval(timerInt);};
+  return{init,answer,cleanup};
+})();
+
+// ════════════════════════════════════════════════════════════
+//  UTILITIES
+// ════════════════════════════════════════════════════════════
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+
+document.addEventListener('keydown',e=>{
+  const s=document.querySelector('.screen.active')?.id;
+  if(e.code==='Enter'){if(s==='lobby-screen')App.startCurrentGame();if(s==='game2-screen')G2.nextWord();}
+  if(s==='game1-screen'){
+    if(e.code==='KeyA'){const b=document.querySelectorAll('.answer-btn');if(b[0]&&!b[0].disabled)b[0].click();}
+    if(e.code==='KeyB'){const b=document.querySelectorAll('.answer-btn');if(b[1]&&!b[1].disabled)b[1].click();}
+    if(e.code==='KeyF')G1.triggerFreeze();
+  }
+  if(s==='game3-screen'){
+    if(e.code==='ArrowRight')G3.answer(1);
+    if(e.code==='ArrowLeft')G3.answer(-1);
+    if(e.code==='Space'){e.preventDefault();G3.answer(0);}
+  }
+});
+
+UI.show('hub');
+</script>
+</body>
+</html>

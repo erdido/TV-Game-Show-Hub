@@ -1,0 +1,28 @@
+{
+  "name": "TV Game Show Hub: College Edition",
+  "short_name": "Game Show Hub",
+  "description": "Three Italian TV game shows reimagined in English — Reverse Logic, The Duel, Word Chain",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait-primary",
+  "background_color": "#080c12",
+  "theme_color": "#080c12",
+  "lang": "en",
+  "categories": ["games", "entertainment", "education"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
